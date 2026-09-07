@@ -9,7 +9,7 @@ An AI-powered personalized study assistant designed to help students turn their 
 
 ## 🚀 Live Demo
 
-👉 [Study Buddy – Live Demo](https://study-buddy-u3ha.onrender.com/)
+👉 [Study Buddy – Live Demo](https://study-buddy-46.onrender.com/)
 
 ✨ Features
 
