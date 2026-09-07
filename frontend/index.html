@@ -1,0 +1,1211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Study Buddy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,500&family=Caveat:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<!-- ═══════════════════════════════════════════════════════
+     MODULE 1 · DESIGN TOKENS & BASE STYLES
+     Edit this block to change colours, fonts, spacing
+═══════════════════════════════════════════════════════ -->
+<style id="mod-tokens">
+:root {
+  /* Palette */
+  --paper:        #EAF0F6;
+  --paper-line:   #CFDBE6;
+  --margin-red:   #C6473F;
+  --ink:          #1B2A4A;
+  --ink-soft:     #4A5C7A;
+  --cover:        #141C29;
+  --cover-2:      #1C2635;
+  --white:        #FFFDF9;
+
+  /* Per-tool accent colours */
+  --coral:      #F2765A;
+  --lime:       #93AF4A;
+  --sky:        #4F9FCE;
+  --lavender:   #9585C9;
+  --gold:       #CE9E33;
+  --mint:       #43AE93;
+  --pink:       #DD6F94;
+  --periwinkle: #7686D6;
+
+  /* Typography */
+  --font-display: 'Fraunces', serif;
+  --font-hand:    'Caveat', cursive;
+  --font-body:    'IBM Plex Sans', sans-serif;
+  --font-mono:    'IBM Plex Mono', monospace;
+
+  /* Misc */
+  --radius:      3px;
+  --shadow-card: 0 2px 4px rgba(27,42,74,.08), 0 8px 20px rgba(27,42,74,.10);
+}
+</style>
+
+<!-- ═══════════════════════════════════════════════════════
+     MODULE 2 · GLOBAL / RESET STYLES
+═══════════════════════════════════════════════════════ -->
+<style id="mod-global">
+*, *::before, *::after { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+body {
+  font-family: var(--font-body);
+  color: var(--ink);
+  background: var(--paper);
+}
+button { font-family: inherit; }
+::selection { background: #FFE18C; }
+
+a:focus-visible, button:focus-visible,
+input:focus-visible, textarea:focus-visible,
+select:focus-visible, summary:focus-visible {
+  outline: 2px solid var(--sky);
+  outline-offset: 2px;
+}
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
+}
+</style>
+
+<!-- ═══════════════════════════════════════════════════════
+     MODULE 3 · LAYOUT — App shell, sidebar, main area
+═══════════════════════════════════════════════════════ -->
+<style id="mod-layout">
+.app-shell { display: flex; min-height: 100vh; }
+
+/* --- Sidebar (spiral notebook cover) --- */
+.sidebar {
+  width: 258px;
+  flex-shrink: 0;
+  background: linear-gradient(180deg, var(--cover), var(--cover-2));
+  color: #EAF0F6;
+  position: relative;
+  padding: 28px 0 20px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+.sidebar::before {
+  content: "";
+  position: absolute;
+  left: 0; top: 0; bottom: 0; width: 16px;
+  background-image: radial-gradient(circle at 8px 14px, #0B1119 0 4.5px, transparent 4.6px);
+  background-size: 16px 26px;
+  background-repeat: repeat-y;
+  background-position: 0 10px;
+}
+.brand { padding-left: 14px; padding-right: 18px; }
+.brand h1 {
+  font-family: var(--font-display);
+  font-weight: 700; font-size: 26px;
+  margin: 0; color: #fff; letter-spacing: -0.01em;
+}
+.brand p {
+  font-family: var(--font-hand);
+  font-size: 18px; color: #B9C6DB; margin: 2px 0 0;
+}
+.nav { display: flex; flex-direction: column; gap: 6px; overflow-y: auto; padding-right: 0; }
+
+.sidebar-footer {
+  margin-top: auto;
+  padding: 14px 18px 0 14px;
+  font-size: 11.5px; color: #8FA0BE; line-height: 1.5;
+  border-top: 1px dashed rgba(255,255,255,.15);
+}
+
+/* --- Main (ruled paper) --- */
+.main {
+  flex: 1; min-width: 0;
+  position: relative;
+  background:
+    repeating-linear-gradient(var(--paper) 0px, var(--paper) 31px, var(--paper-line) 32px),
+    var(--paper);
+  padding-left: 76px;
+}
+.main::before {
+  content: "";
+  position: absolute;
+  left: 56px; top: 0; bottom: 0; width: 2px;
+  background: var(--margin-red);
+  opacity: .55;
+}
+.main-inner {
+  max-width: 980px;
+  padding: 34px 28px 80px 24px;
+}
+
+/* --- Responsive: collapse sidebar to icon strip --- */
+@media (max-width: 760px) {
+  .sidebar { width: 64px; padding: 20px 0 16px 16px; }
+  .brand p, .nav-item .lbl { display: none; }
+  .brand h1 { font-size: 0; }
+  .brand h1::before { content: "SB"; font-size: 18px; }
+  .sidebar-footer { display: none; }
+  .main { padding-left: 0; }
+  .main::before { left: 30px; }
+  .main-inner { padding: 24px 18px 70px 44px; }
+}
+</style>
+
+<!-- ═══════════════════════════════════════════════════════
+     MODULE 4 · NAVIGATION COMPONENT
+═══════════════════════════════════════════════════════ -->
+<style id="mod-nav">
+.nav-item {
+  display: flex; align-items: center; gap: 10px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-right: none;
+  color: #DCE5F2;
+  text-align: left;
+  padding: 10px 12px 10px 14px;
+  border-radius: 8px 0 0 8px;
+  cursor: pointer;
+  position: relative;
+  transition: transform .12s ease, background .12s ease;
+}
+.nav-item:hover { background: rgba(255,255,255,0.09); }
+.nav-item .ico {
+  width: 26px; height: 26px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px; border-radius: 6px;
+  background: rgba(255,255,255,.08);
+}
+.nav-item .lbl { display: flex; flex-direction: column; line-height: 1.15; }
+.nav-item .lbl .t  { font-weight: 600; font-size: 13.5px; color: #F3F6FA; }
+.nav-item .lbl .tag {
+  font-family: var(--font-hand);
+  font-size: 15px; color: var(--tab-accent, #C9D5E8); margin-top: -1px;
+}
+.nav-item::after {
+  content: "";
+  position: absolute; left: 0; top: 8px; bottom: 8px; width: 4px;
+  background: var(--tab-accent, transparent);
+  border-radius: 2px;
+}
+.nav-item.active {
+  background: var(--paper);
+  color: var(--ink);
+  transform: translateX(6px);
+  box-shadow: -4px 4px 10px rgba(0,0,0,.25);
+}
+.nav-item.active .lbl .t   { color: var(--ink); }
+.nav-item.active .ico      { background: var(--tab-accent); color: #fff; }
+.nav-item.active .lbl .tag { color: var(--tab-accent-dark, var(--ink-soft)); }
+@media (max-width: 760px) {
+  .nav-item { justify-content: center; padding: 10px; border-radius: 8px 0 0 8px; }
+  .nav-item.active { transform: translateX(4px); }
+}
+</style>
+
+<!-- ═══════════════════════════════════════════════════════
+     MODULE 5 · SHARED UI PRIMITIVES
+     Buttons, cards, empty states, loading, form fields
+═══════════════════════════════════════════════════════ -->
+<style id="mod-ui">
+/* Buttons */
+.btn {
+  font-family: var(--font-body); font-weight: 600; font-size: 13.5px;
+  border-radius: 6px; border: 1.5px solid var(--ink);
+  background: var(--white); color: var(--ink);
+  padding: 9px 16px; cursor: pointer;
+  transition: transform .08s ease, box-shadow .08s ease;
+}
+.btn:hover  { transform: translateY(-1px); box-shadow: 0 3px 0 rgba(27,42,74,.18); }
+.btn:active { transform: translateY(0); box-shadow: none; }
+.btn:disabled { opacity: .45; cursor: not-allowed; transform: none; box-shadow: none; }
+.btn-primary { background: var(--accent, var(--ink)); color: #fff; border-color: var(--accent, var(--ink)); }
+.btn-ghost   { background: transparent; border-color: rgba(27,42,74,.3); }
+
+/* Index card */
+.card {
+  background: var(--white); border-radius: var(--radius);
+  box-shadow: var(--shadow-card); padding: 20px 20px 18px;
+  position: relative; margin-top: 18px;
+}
+.card .tab {
+  position: absolute; top: -13px; left: 18px;
+  transform: rotate(-3deg);
+  background: var(--accent, var(--gold)); color: #fff;
+  font-family: var(--font-hand); font-size: 16px; font-weight: 600;
+  padding: 2px 12px 4px; border-radius: 3px;
+  box-shadow: 0 2px 4px rgba(0,0,0,.2);
+}
+
+/* Empty state */
+.empty-state {
+  border: 1.5px dashed rgba(27,42,74,.28);
+  border-radius: 8px; padding: 34px 26px;
+  text-align: center; background: rgba(255,255,255,.5);
+  max-width: 560px;
+}
+.empty-state .big {
+  font-family: var(--font-hand); font-size: 26px;
+  color: var(--ink); display: block; margin-bottom: 6px;
+}
+.empty-state p { color: var(--ink-soft); font-size: 14px; margin: 0 0 16px; }
+
+/* Loading spinner */
+.loading-line {
+  display: flex; align-items: center; gap: 10px;
+  font-family: var(--font-mono); font-size: 13px; color: var(--ink-soft);
+  margin-top: 18px;
+}
+.pencil {
+  width: 16px; height: 16px; border-radius: 50%;
+  border: 2.5px solid var(--accent, var(--ink)); border-top-color: transparent;
+  animation: spin .8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Form fields */
+.field label { display: block; font-size: 12.5px; font-weight: 600; color: var(--ink-soft); margin-bottom: 4px; }
+.field input, .field textarea {
+  width: 100%; padding: 9px 11px; border-radius: 6px;
+  border: 1.5px solid rgba(27,42,74,.25); font-family: var(--font-body);
+  font-size: 13.5px; background: #fff;
+}
+.field.full { grid-column: 1 / -1; }
+
+/* Action row + error */
+.action-row { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; align-items: center; }
+.errmsg { color: var(--coral); font-size: 13px; margin-top: 10px; font-weight: 600; }
+.status-pill {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 8px 12px; border-radius: 999px;
+  font-size: 12.5px; font-weight: 600; margin-bottom: 14px;
+  border: 1px solid rgba(27,42,74,.14);
+  background: rgba(255,255,255,.7);
+}
+.status-pill::before {
+  content: ''; width: 8px; height: 8px; border-radius: 50%; background: var(--status-color, var(--ink-soft));
+}
+.status-pill.ok { --status-color: var(--lime); }
+.status-pill.offline { --status-color: var(--coral); }
+.status-pill.checking { --status-color: var(--gold); }
+.hint-list { margin: 10px 0 0; padding-left: 18px; color: var(--ink-soft); font-size: 13.5px; line-height: 1.55; }
+.mini-note {
+  margin-top: 14px; padding: 10px 12px; border-left: 3px solid var(--sky);
+  background: rgba(79,159,206,.08); border-radius: 0 6px 6px 0; color: var(--ink-soft); font-size: 13.5px;
+}
+
+/* Tool header */
+.tool-header { margin-bottom: 22px; }
+.tool-header .eyebrow { font-family: var(--font-hand); font-size: 20px; color: var(--accent, var(--ink-soft)); display: block; }
+.tool-header h2 { font-family: var(--font-display); font-weight: 700; font-size: 34px; margin: 2px 0 6px; color: var(--ink); }
+.tool-header .sub { color: var(--ink-soft); font-size: 14.5px; max-width: 640px; }
+</style>
+
+<!-- ═══════════════════════════════════════════════════════
+     MODULE 6 · TOOL-SPECIFIC STYLES
+     Each tool has its own clearly labelled section
+═══════════════════════════════════════════════════════ -->
+<style id="mod-tools">
+
+/* ── Study Source ── */
+.source-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 20px; max-width: 900px;
+}
+@media (max-width: 760px) { .source-grid { grid-template-columns: 1fr; } }
+.dropzone {
+  border: 2px dashed rgba(27,42,74,.3); border-radius: 8px;
+  background: rgba(255,255,255,.55); padding: 26px 18px;
+  text-align: center; cursor: pointer;
+  transition: background .15s ease, border-color .15s ease, transform .15s ease;
+}
+.dropzone:hover { background: rgba(255,255,255,.8); }
+.dropzone.dragging {
+  border-color: var(--sky);
+  background: rgba(79,159,206,.12);
+  transform: translateY(-1px);
+}
+.dropzone .icon   { font-size: 26px; }
+.dropzone .main-txt { font-weight: 600; margin: 6px 0 2px; }
+.dropzone .sub-txt  { font-size: 12.5px; color: var(--ink-soft); }
+textarea.paste-area {
+  width: 100%; min-height: 150px; resize: vertical;
+  font-family: var(--font-body); font-size: 13.5px;
+  border: 1.5px solid rgba(27,42,74,.25); border-radius: 6px;
+  padding: 12px; background: var(--white); color: var(--ink);
+}
+.source-preview {
+  margin-top: 14px; font-family: var(--font-mono); font-size: 12px;
+  color: var(--ink-soft); background: rgba(255,255,255,.5);
+  border-left: 3px solid var(--coral);
+  padding: 10px 14px; max-height: 140px; overflow: auto; white-space: pre-wrap;
+}
+.filepill {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--white); border-radius: 20px;
+  padding: 7px 14px; box-shadow: var(--shadow-card);
+  font-size: 13px; font-weight: 600;
+}
+
+/* ── AI Notes ── */
+.notes-content h3 { font-family: var(--font-display); font-size: 19px; margin: 18px 0 6px; color: var(--ink); }
+.notes-content h3:first-child { margin-top: 4px; }
+.notes-content ul { margin: 4px 0 10px; padding-left: 20px; }
+.notes-content li { margin-bottom: 5px; line-height: 1.55; font-size: 14.5px; }
+.notes-content strong { color: var(--lime); background: #F2F7E4; padding: 0 3px; border-radius: 2px; }
+
+/* ── Flashcards ── */
+.flash-wrap  { max-width: 520px; }
+.flash-scene { perspective: 1400px; }
+.flash-card  { width: 100%; height: 260px; position: relative; cursor: pointer; }
+.flash-card-inner {
+  position: relative; width: 100%; height: 100%;
+  transition: transform .5s cubic-bezier(.2,.8,.2,1);
+  transform-style: preserve-3d;
+}
+.flash-card.flipped .flash-card-inner { transform: rotateY(180deg); }
+.flash-face {
+  position: absolute; inset: 0; backface-visibility: hidden;
+  border-radius: 8px; box-shadow: var(--shadow-card);
+  padding: 26px; display: flex; align-items: center; justify-content: center;
+  text-align: center; font-size: 17px; line-height: 1.5; background: var(--white);
+}
+.flash-face.front { border-top: 6px solid var(--accent, var(--sky)); }
+.flash-face.back  {
+  transform: rotateY(180deg);
+  background: var(--accent, var(--sky)); color: #fff;
+  font-family: var(--font-display); font-size: 18px;
+}
+.flash-hint     { text-align: center; font-family: var(--font-hand); font-size: 15px; color: var(--ink-soft); margin-top: 8px; }
+.flash-controls { display: flex; align-items: center; justify-content: space-between; margin-top: 16px; }
+.flash-counter  { font-family: var(--font-mono); font-size: 13px; color: var(--ink-soft); }
+
+/* ── Quiz ── */
+.quiz-wrap { max-width: 620px; }
+.quiz-progress {
+  font-family: var(--font-mono); font-size: 12.5px; color: var(--ink-soft);
+  display: flex; justify-content: space-between; margin-bottom: 8px;
+}
+.quiz-q   { font-size: 17px; font-weight: 600; margin: 6px 0 16px; line-height: 1.4; }
+.quiz-opt {
+  display: block; width: 100%; text-align: left;
+  padding: 12px 14px; margin-bottom: 9px;
+  border: 1.5px solid rgba(27,42,74,.22); border-radius: 7px;
+  background: #fff; cursor: pointer; font-size: 14px;
+  transition: background .1s ease;
+}
+.quiz-opt:hover:not(:disabled) { background: #F5F8FB; }
+.quiz-opt:disabled  { cursor: default; }
+.quiz-opt.correct   { border-color: var(--lime); background: #EEF5DC; font-weight: 600; }
+.quiz-opt.wrong     { border-color: var(--coral); background: #FBEAE5; }
+.quiz-explain {
+  font-size: 13.5px; color: var(--ink-soft);
+  background: rgba(255,255,255,.6); border-left: 3px solid var(--lavender);
+  padding: 10px 14px; margin-top: 10px; border-radius: 4px;
+}
+.quiz-score-screen     { text-align: center; padding: 30px 10px; }
+.quiz-score-screen .num {
+  font-family: var(--font-display); font-size: 52px; font-weight: 700; color: var(--lavender);
+}
+
+/* ── Mind Map ── */
+.mmap-node > summary {
+  cursor: pointer; list-style: none;
+  display: flex; align-items: center; gap: 8px;
+  padding: 7px 10px; border-radius: 6px;
+  font-weight: 600; font-size: 14.5px;
+  background: rgba(255,255,255,.6);
+}
+.mmap-node > summary::-webkit-details-marker { display: none; }
+.mmap-node > summary::before { content: "▸"; color: var(--accent, var(--gold)); transition: transform .15s ease; font-size: 12px; }
+.mmap-node[open] > summary::before { transform: rotate(90deg); }
+.mmap-node .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--accent, var(--gold)); flex-shrink: 0; }
+.mmap-children  { margin-left: 22px; padding-left: 12px; border-left: 2px dotted rgba(27,42,74,.2); }
+.mmap-leaf      { margin: 5px 0 5px 22px; padding: 6px 10px; font-size: 13.5px; color: var(--ink-soft); border-left: 2px dotted rgba(27,42,74,.2); }
+
+/* ── Chat (shared by Ask My Notes + Doubt Solver) ── */
+.chat-wrap { max-width: 700px; display: flex; flex-direction: column; height: calc(100vh - 230px); min-height: 360px; }
+.chat-log  { flex: 1; overflow-y: auto; padding: 6px 2px 12px; }
+.msg { margin-bottom: 14px; max-width: 82%; }
+.msg.user { margin-left: auto; }
+.msg .bubble { padding: 11px 14px; border-radius: 12px; font-size: 14px; line-height: 1.5; box-shadow: var(--shadow-card); }
+.msg.user .bubble { background: var(--accent, var(--ink)); color: #fff; border-bottom-right-radius: 3px; }
+.msg.bot  .bubble { background: var(--white); border-bottom-left-radius: 3px; }
+.msg.bot  .bubble p { margin: 0 0 8px; }
+.msg.bot  .bubble p:last-child { margin-bottom: 0; }
+.msg .who { font-family: var(--font-hand); font-size: 13px; color: var(--ink-soft); margin-bottom: 3px; }
+.msg.user .who { text-align: right; }
+.chat-input-row { display: flex; gap: 8px; padding-top: 10px; border-top: 1px dashed rgba(27,42,74,.2); }
+.chat-input-row input {
+  flex: 1; padding: 11px 14px; border-radius: 22px;
+  border: 1.5px solid rgba(27,42,74,.25); font-size: 14px;
+  font-family: var(--font-body); background: #fff;
+}
+.chat-input-row button { border-radius: 22px; padding: 10px 20px; }
+
+/* ── Study Planner ── */
+.planner-form { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; max-width: 780px; }
+@media (max-width: 700px) { .planner-form { grid-template-columns: 1fr; } }
+.plan-day {
+  display: flex; gap: 14px; align-items: flex-start;
+  padding: 12px 0; border-bottom: 1px dashed rgba(27,42,74,.18);
+}
+.plan-day:last-child { border-bottom: none; }
+.plan-day .d {
+  font-family: var(--font-mono); font-size: 12px; color: #fff;
+  background: var(--accent, var(--pink)); border-radius: 5px;
+  padding: 4px 8px; min-width: 74px; text-align: center; flex-shrink: 0;
+}
+.plan-day .d .date { display: block; font-size: 10px; opacity: .85; }
+.plan-day .body .focus  { font-weight: 700; font-size: 14px; margin-bottom: 3px; }
+.plan-day .body ul { margin: 0; padding-left: 18px; }
+.plan-day .body li { font-size: 13px; color: var(--ink-soft); margin-bottom: 2px; }
+.plan-day.revision .d  { background: var(--gold); }
+
+/* ── Doubt Solver (step explainer) ── */
+.doubt-content ol { padding-left: 20px; }
+.doubt-content li { margin-bottom: 8px; line-height: 1.55; font-size: 14.5px; }
+.doubt-content p  { line-height: 1.6; font-size: 14.5px; }
+</style>
+</head>
+<body>
+<div class="app-shell">
+  <nav class="sidebar" aria-label="Study tools">
+    <div class="brand">
+      <h1>Study Buddy</h1>
+      <p>your notebook, powered up</p>
+    </div>
+    <div class="nav" id="nav"></div>
+    <div class="sidebar-footer">
+      In-memory prototype — nothing is saved between sessions. Refreshing clears everything.
+    </div>
+  </nav>
+  <main class="main">
+    <div class="main-inner" id="main-content"></div>
+  </main>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+
+<!-- ═══════════════════════════════════════════════════════
+     MODULE A · TOOL REGISTRY
+     Add, remove, or reorder tools here.
+     Each entry drives both the sidebar nav and the router.
+═══════════════════════════════════════════════════════ -->
+<script id="mod-registry">
+const TOOLS = [
+  { id:'source',     label:'Study Source',  tag:'my material', icon:'📎', accent:'var(--coral)',      accentDark:'#B8492F', requiresSource:false },
+  { id:'notes',      label:'AI Notes',      tag:'summarise',   icon:'📝', accent:'var(--lime)',       accentDark:'#5F7A2A', requiresSource:true  },
+  { id:'flashcards', label:'Flashcards',    tag:'memorise',    icon:'🗂️', accent:'var(--sky)',        accentDark:'#2E6E96', requiresSource:true  },
+  { id:'quiz',       label:'Quiz',          tag:'test me',     icon:'✅', accent:'var(--lavender)',   accentDark:'#5E4E96', requiresSource:true  },
+  { id:'mindmap',    label:'Mind Map',      tag:'connect it',  icon:'🗺️', accent:'var(--gold)',       accentDark:'#8C6A13', requiresSource:true  },
+  { id:'ask',        label:'Ask My Notes',  tag:'ask me',      icon:'💬', accent:'var(--mint)',       accentDark:'#256E5A', requiresSource:true  },
+  { id:'planner',    label:'Study Planner', tag:'plan it',     icon:'📅', accent:'var(--pink)',       accentDark:'#A5375A', requiresSource:true  },
+  { id:'doubt',      label:'Doubt Solver',  tag:'explain',     icon:'🤔', accent:'var(--periwinkle)', accentDark:'#4453A8', requiresSource:false },
+];
+</script>
+
+<!-- ═══════════════════════════════════════════════════════
+     MODULE B · GLOBAL STATE
+     Single source of truth for all UI state.
+     Reset helpers live here too.
+═══════════════════════════════════════════════════════ -->
+<script id="mod-state">
+const state = {
+  // Navigation
+  currentTool: 'source',
+
+  // Study material
+  sourceText: '',
+  sourceName: '',
+
+  // AI Notes
+  notes: null, notesLoading: false, notesError: null,
+
+  // Flashcards
+  flashcards: null, flashLoading: false, flashError: null,
+  flashIndex: 0, flashFlipped: false,
+
+  // Quiz
+  quiz: null, quizLoading: false, quizError: null,
+  quizIndex: 0, quizScore: 0, quizSelected: null, quizFinished: false,
+
+  // Mind Map
+  mindmap: null, mmapLoading: false, mmapError: null,
+
+  // Ask My Notes chat
+  askHistory: [], askLoading: false, askError: null,
+
+  // Study Planner
+  plan: null, planLoading: false, planError: null,
+  planForm: { examDate: '', hours: '2', topics: '' },
+
+  // Doubt Solver chat
+  doubtHistory: [], doubtLoading: false, doubtError: null,
+
+  // Backend status
+  backendStatus: 'checking',
+  backendMessage: 'Checking local AI backend…',
+};
+
+function resetGeneratedContent() {
+  state.notes = null;      state.notesError = null;
+  state.flashcards = null; state.flashError = null;   state.flashIndex = 0; state.flashFlipped = false;
+  state.quiz = null;       state.quizError = null;    state.quizIndex = 0; state.quizScore = 0;
+  state.quizSelected = null; state.quizFinished = false;
+  state.mindmap = null;    state.mmapError = null;
+  state.askHistory = [];   state.askError = null;
+  state.plan = null;       state.planError = null;
+}
+</script>
+
+<!-- ═══════════════════════════════════════════════════════
+     MODULE C · LLM API CLIENT
+     All fetch calls to the Claude API live here.
+     Swap the endpoint or model in one place.
+═══════════════════════════════════════════════════════ -->
+<script id="mod-api">
+// ══════════════════════════════════════════════
+//  Backend API client
+//  Change BACKEND_URL when you deploy the server
+// ══════════════════════════════════════════════
+const BACKEND_URL = location.protocol === 'file:' ? 'http://localhost:3001' : location.origin;
+
+const API = {
+  async health() {
+    const res = await fetch(`${BACKEND_URL}/api/health`);
+    const text = await res.text();
+    let data = {};
+    try { data = text ? JSON.parse(text) : {}; } catch {}
+    if (!res.ok) throw new Error(data.error || `Server error ${res.status}`);
+    return data;
+  },
+
+  async post(endpoint, body) {
+    try {
+      const res = await fetch(`${BACKEND_URL}${endpoint}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      const text = await res.text();
+      let data = {};
+      try { data = text ? JSON.parse(text) : {}; } catch {}
+      if (!res.ok) throw new Error(data.error || `Server error ${res.status}`);
+      return data; // { html } or { json }
+    } catch (e) {
+      if (e instanceof Error && e.message.includes('fetch')) {
+        throw new Error('Unable to reach the local AI backend. Make sure it is running on localhost:3001.');
+      }
+      throw e;
+    }
+  },
+};
+
+function escapeHTML(s) {
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+// Backend now handles JSON parsing — these are kept as stubs for safety
+function stripFence(t) { return t; }
+</script>
+
+<!-- ═══════════════════════════════════════════════════════
+     MODULE D · SOURCE HANDLER
+     PDF parsing (pdf.js) and text ingestion
+═══════════════════════════════════════════════════════ -->
+<script id="mod-source">
+if (window.pdfjsLib) {
+  pdfjsLib.GlobalWorkerOptions.workerSrc =
+    'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+}
+
+async function handleFile(file) {
+  if (!file) return;
+  try {
+    if (file.name.toLowerCase().endsWith('.pdf')) {
+      state.sourceName = file.name;
+      renderApp(); // show loading state
+      const pdf  = await pdfjsLib.getDocument({ data: await file.arrayBuffer() }).promise;
+      let text = '';
+      for (let i = 1; i <= pdf.numPages; i++) {
+        const page    = await pdf.getPage(i);
+        const content = await page.getTextContent();
+        text += content.items.map(it => it.str).join(' ') + '\n\n';
+      }
+      state.sourceText = text.trim();
+    } else {
+      state.sourceText = (await file.text()).trim();
+      state.sourceName = file.name;
+    }
+    resetGeneratedContent();
+  } catch (e) {
+    state.sourceName = '';
+    state.sourceText = '';
+    alert("Couldn't read that file — try a .pdf or .txt.");
+  }
+  renderApp();
+}
+</script>
+
+<!-- ═══════════════════════════════════════════════════════
+     MODULE E · AI GENERATORS
+     One async function per tool. Each follows the same
+     pattern: set loading → call API → parse → store → render.
+═══════════════════════════════════════════════════════ -->
+<script id="mod-generators">
+// ══════════════════════════════════════════════════════
+//  AI Generators — each calls a backend endpoint.
+//  Pattern: set loading → POST to /api/... → store → render
+// ══════════════════════════════════════════════════════
+
+async function generateNotes() {
+  state.notesLoading = true; state.notesError = null; renderApp();
+  try {
+    const { html } = await API.post('/api/notes', { sourceText: state.sourceText });
+    state.notes = html;
+  } catch (e) { state.notesError = e.message || "Couldn't generate notes. Try again."; }
+  state.notesLoading = false; renderApp();
+}
+
+async function generateFlashcards() {
+  state.flashLoading = true; state.flashError = null; renderApp();
+  try {
+    const { json: cards } = await API.post('/api/flashcards', { sourceText: state.sourceText });
+    if (!Array.isArray(cards) || !cards.length) throw new Error('Bad response shape');
+    state.flashcards = cards; state.flashIndex = 0; state.flashFlipped = false;
+  } catch (e) { state.flashError = e.message || "Couldn't generate flashcards. Try again."; }
+  state.flashLoading = false; renderApp();
+}
+
+async function generateQuiz() {
+  state.quizLoading = true; state.quizError = null; renderApp();
+  try {
+    const { json: qs } = await API.post('/api/quiz', { sourceText: state.sourceText });
+    if (!Array.isArray(qs) || !qs.length) throw new Error('Bad response shape');
+    state.quiz = qs; state.quizIndex = 0; state.quizScore = 0;
+    state.quizSelected = null; state.quizFinished = false;
+  } catch (e) { state.quizError = e.message || "Couldn't generate the quiz. Try again."; }
+  state.quizLoading = false; renderApp();
+}
+
+async function generateMindmap() {
+  state.mmapLoading = true; state.mmapError = null; renderApp();
+  try {
+    const { json: tree } = await API.post('/api/mindmap', { sourceText: state.sourceText });
+    if (!tree?.topic) throw new Error('Bad response shape');
+    state.mindmap = tree;
+  } catch (e) { state.mmapError = e.message || "Couldn't generate the mind map. Try again."; }
+  state.mmapLoading = false; renderApp();
+}
+
+async function sendAsk(question) {
+  if (!question.trim()) return;
+  state.askHistory.push({ role: 'user', text: question });
+  state.askLoading = true; state.askError = null; renderApp();
+  try {
+    const { html } = await API.post('/api/ask', {
+      sourceText: state.sourceText,
+      history:    state.askHistory.slice(-6),
+      question,
+    });
+    state.askHistory.push({ role: 'bot', text: html });
+  } catch {
+    state.askHistory.push({ role: 'bot', text: '<p>Something went wrong — mind trying again?</p>' });
+  }
+  state.askLoading = false; renderApp();
+}
+
+async function generatePlan() {
+  const { examDate, hours, topics } = state.planForm;
+  if (!examDate || !topics.trim()) {
+    state.planError = "Add an exam date and at least one topic first."; renderApp(); return;
+  }
+  state.planLoading = true; state.planError = null; renderApp();
+  try {
+    const { json: plan } = await API.post('/api/planner', { examDate, hours, topics });
+    if (!Array.isArray(plan) || !plan.length) throw new Error('Bad response shape');
+    state.plan = plan;
+  } catch (e) { state.planError = e.message || "Couldn't build the plan. Try again."; }
+  state.planLoading = false; renderApp();
+}
+
+async function sendDoubt(question) {
+  if (!question.trim()) return;
+  state.doubtHistory.push({ role: 'user', text: question });
+  state.doubtLoading = true; state.doubtError = null; renderApp();
+  try {
+    const { html } = await API.post('/api/doubt', {
+      history:  state.doubtHistory.slice(-6),
+      question,
+    });
+    state.doubtHistory.push({ role: 'bot', text: html });
+  } catch {
+    state.doubtHistory.push({ role: 'bot', text: '<p>Something went wrong — could you try again?</p>' });
+  }
+  state.doubtLoading = false; renderApp();
+}
+</script>
+
+<!-- ═══════════════════════════════════════════════════════
+     MODULE F · VIEW HELPERS (shared render utilities)
+     Reusable HTML-building functions used across tool views
+═══════════════════════════════════════════════════════ -->
+<script id="mod-view-helpers">
+function toolMeta(id) { return TOOLS.find(t => t.id === id); }
+
+function renderToolHeader(tool, subtitle) {
+  return `<div class="tool-header" style="--accent:${tool.accent}">
+    <span class="eyebrow">${tool.tag}</span>
+    <h2>${tool.label}</h2>
+    <p class="sub">${subtitle}</p>
+  </div>`;
+}
+
+function renderEmptyState(tool) {
+  return `<div class="empty-state">
+    <span class="big">psst — add your study material first</span>
+    <p>${tool.label} reads from your Study Source. Upload a PDF, a .txt file, or paste text in, and this tab will wake up.</p>
+    <ul class="hint-list">
+      <li>Paste lecture notes, textbook sections, or exam revision notes.</li>
+      <li>Once material is added, the tool becomes available instantly.</li>
+      <li>Tip: shorter, clear chunks tend to produce better results.</li>
+    </ul>
+    <div class="action-row" style="justify-content:center;">
+      <button class="btn btn-primary" style="--accent:${tool.accent}" id="goToSource">Go to Study Source</button>
+    </div>
+  </div>`;
+}
+
+function renderLoading(accent, message) {
+  return `<div class="loading-line" style="--accent:${accent}"><span class="pencil"></span> ${message}</div>`;
+}
+
+function renderChatLog(history, loadingMsg, accent, loadingFlag, emptyMsg) {
+  if (!history.length) {
+    return `<div class="empty-state" style="margin-top:0;"><span class="big">${emptyMsg.title}</span><p>${emptyMsg.body}</p></div>`;
+  }
+  const msgs = history.map(m => `
+    <div class="msg ${m.role}">
+      <div class="who">${m.role === 'user' ? 'you' : 'study buddy'}</div>
+      <div class="bubble">${m.role === 'user' ? escapeHTML(m.text) : m.text}</div>
+    </div>`).join('');
+  return msgs + (loadingFlag ? renderLoading(accent, loadingMsg) : '');
+}
+
+function renderMmapNode(node) {
+  const kids = node.children || [];
+  if (!kids.length) return `<div style="margin:4px 0;padding:7px 10px 7px 28px;font-size:14px;">${escapeHTML(node.topic)}</div>`;
+  const childHTML = kids.map(c =>
+    c.children?.length ? renderMmapNode(c) : `<div class="mmap-leaf">${escapeHTML(c.topic)}</div>`
+  ).join('');
+  return `<details class="mmap-node" open>
+    <summary><span class="dot"></span>${escapeHTML(node.topic)}</summary>
+    <div class="mmap-children">${childHTML}</div>
+  </details>`;
+}
+
+function scoreMessage(score, total) {
+  const p = score / total;
+  if (p === 1)   return "Perfect score — that material is locked in.";
+  if (p >= 0.6)  return "Solid work. Revisit the ones you missed and go again.";
+  return "Good start — head back to your notes and give it another pass.";
+}
+</script>
+
+<!-- ═══════════════════════════════════════════════════════
+     MODULE G · TOOL VIEWS
+     One render function per tool. Each returns an HTML string.
+     attachHandlers() wires up events after innerHTML is set.
+═══════════════════════════════════════════════════════ -->
+<script id="mod-views">
+
+const SUBTITLES = {
+  notes:      'Turns your material into structured, exam-ready notes — headings and bullets, key terms bolded.',
+  flashcards: 'Eight front/back cards built from the key concepts in your material. Flip and step through them.',
+  quiz:       'Five multiple-choice questions with explanations, so you find out why — not just whether.',
+  mindmap:    'A topic tree showing how the ideas in your material branch and connect, up to three levels deep.',
+  ask:        'Ask anything about your material. Answers stay grounded in what you gave it.',
+  planner:    'Tell it your exam date, hours per day, and topics — get a day-by-day plan with revision built in.',
+  doubt:      'Ask any question, get a step-by-step explanation. Works standalone — no study material needed.',
+};
+
+// ── Study Source ────────────────────────────────────────
+function viewSource(tool) {
+  const preview = state.sourceText
+    ? escapeHTML(state.sourceText.slice(0, 600)) + (state.sourceText.length > 600 ? '…' : '')
+    : '';
+  const statusText = state.backendStatus === 'ok'
+    ? 'Local AI backend is connected.'
+    : state.backendStatus === 'offline'
+      ? 'Backend is unavailable. Start the server on localhost:3001.'
+      : 'Checking local AI backend…';
+  return renderToolHeader(tool, 'Upload a PDF or .txt file, or paste text straight in. Every tool reads from this.') + `
+    <div class="status-pill ${state.backendStatus}">${escapeHTML(statusText)}</div>
+    <div class="source-grid">
+      <div>
+        <div class="dropzone" id="dropzone">
+          <div class="icon">📎</div>
+          <div class="main-txt">Drop a file, or click to browse</div>
+          <div class="sub-txt">.pdf or .txt · parsed right in your browser</div>
+        </div>
+        <input type="file" id="fileInput" accept=".pdf,.txt" style="display:none">
+      </div>
+      <div>
+        <label style="display:block;font-size:12.5px;font-weight:600;color:var(--ink-soft);margin-bottom:6px;">…or paste your notes / chapter text</label>
+        <textarea class="paste-area" id="pasteArea" placeholder="Paste lecture notes, a textbook excerpt, anything you want to study from…">${escapeHTML(!state.sourceName ? state.sourceText : '')}</textarea>
+        <div style="margin-top:8px;display:flex;gap:10px;flex-wrap:wrap;">
+          <button class="btn btn-primary" style="--accent:${tool.accent}" id="usePaste">Use this text</button>
+          <button class="btn btn-ghost" id="browseFile">Choose file</button>
+        </div>
+      </div>
+    </div>
+    <div style="margin-top:20px;">
+      ${state.sourceText ? `
+        <span class="filepill">📘 ${state.sourceName ? escapeHTML(state.sourceName) : 'Pasted text'} · ${state.sourceText.length.toLocaleString()} characters</span>
+        <div class="source-preview">${preview}</div>
+        <div class="action-row"><button class="btn btn-ghost" id="clearSource">Clear material</button></div>
+      ` : `<div class="mini-note">Nothing loaded yet — the other tabs stay quiet until you add something here. Start with a short chapter section or your handwritten notes.</div>`}
+    </div>`;
+}
+
+// ── AI Notes ───────────────────────────────────────────
+function viewNotes(tool) {
+  let body;
+  if      (state.notesLoading) body = renderLoading(tool.accent, 'sketching out the headings…');
+  else if (state.notesError)   body = `<p class="errmsg">${state.notesError}</p><button class="btn btn-primary" style="--accent:${tool.accent}" id="genNotes">Try again</button>`;
+  else if (state.notes)        body = `<div class="card" style="--accent:${tool.accent}"><span class="tab">notes</span><div class="notes-content">${state.notes}</div></div><div class="action-row"><button class="btn btn-ghost" id="genNotes">↻ Regenerate</button></div>`;
+  else                         body = `<button class="btn btn-primary" style="--accent:${tool.accent}" id="genNotes">Generate notes</button>`;
+  return renderToolHeader(tool, SUBTITLES.notes) + body;
+}
+
+// ── Flashcards ─────────────────────────────────────────
+function viewFlashcards(tool) {
+  let body;
+  if (state.flashLoading) { body = renderLoading(tool.accent, 'shuffling up 8 cards…'); }
+  else if (state.flashError) {
+    body = `<p class="errmsg">${state.flashError}</p><button class="btn btn-primary" style="--accent:${tool.accent}" id="genFlash">Try again</button>`;
+  } else if (state.flashcards) {
+    const card = state.flashcards[state.flashIndex];
+    body = `
+      <div class="flash-wrap">
+        <div class="flash-scene">
+          <div class="flash-card ${state.flashFlipped ? 'flipped' : ''}" id="flashCard" style="--accent:${tool.accent}">
+            <div class="flash-card-inner">
+              <div class="flash-face front">${escapeHTML(card.front)}</div>
+              <div class="flash-face back">${escapeHTML(card.back)}</div>
+            </div>
+          </div>
+        </div>
+        <div class="flash-hint">tap the card to flip</div>
+        <div class="flash-controls">
+          <button class="btn btn-ghost" id="flashPrev" ${state.flashIndex===0?'disabled':''}>← Prev</button>
+          <span class="flash-counter">${state.flashIndex+1} / ${state.flashcards.length}</span>
+          <button class="btn btn-ghost" id="flashNext" ${state.flashIndex===state.flashcards.length-1?'disabled':''}>Next →</button>
+        </div>
+      </div>
+      <div class="action-row"><button class="btn btn-ghost" id="genFlash">↻ Regenerate set</button></div>`;
+  } else {
+    body = `<button class="btn btn-primary" style="--accent:${tool.accent}" id="genFlash">Generate flashcards</button>`;
+  }
+  return renderToolHeader(tool, SUBTITLES.flashcards) + body;
+}
+
+// ── Quiz ───────────────────────────────────────────────
+function viewQuiz(tool) {
+  let body;
+  if (state.quizLoading) { body = renderLoading(tool.accent, 'writing 5 questions…'); }
+  else if (state.quizError) {
+    body = `<p class="errmsg">${state.quizError}</p><button class="btn btn-primary" style="--accent:${tool.accent}" id="genQuiz">Try again</button>`;
+  } else if (state.quiz && state.quizFinished) {
+    body = `<div class="card" style="--accent:${tool.accent}"><span class="tab">result</span>
+      <div class="quiz-score-screen">
+        <div class="num">${state.quizScore} / ${state.quiz.length}</div>
+        <p style="color:var(--ink-soft);">${scoreMessage(state.quizScore, state.quiz.length)}</p>
+        <div class="action-row" style="justify-content:center;">
+          <button class="btn btn-primary" style="--accent:${tool.accent}" id="retakeQuiz">Retake</button>
+          <button class="btn btn-ghost" id="genQuiz">↻ New questions</button>
+        </div>
+      </div></div>`;
+  } else if (state.quiz) {
+    const q = state.quiz[state.quizIndex];
+    const sel = state.quizSelected;
+    body = `<div class="quiz-wrap">
+      <div class="quiz-progress"><span>Question ${state.quizIndex+1} of ${state.quiz.length}</span><span>score: ${state.quizScore}</span></div>
+      <div class="card" style="--accent:${tool.accent}"><span class="tab">test me</span>
+        <div class="quiz-q">${escapeHTML(q.question)}</div>
+        ${q.options.map((opt,i) => {
+          const cls = sel===null ? '' : i===q.correctIndex ? 'correct' : i===sel ? 'wrong' : '';
+          return `<button class="quiz-opt ${cls}" data-idx="${i}" ${sel!==null?'disabled':''}>${escapeHTML(opt)}</button>`;
+        }).join('')}
+        ${sel!==null ? `<div class="quiz-explain">${escapeHTML(q.explanation)}</div>
+          <div class="action-row"><button class="btn btn-primary" style="--accent:${tool.accent}" id="quizNext">${state.quizIndex===state.quiz.length-1?'See score':'Next question →'}</button></div>` : ''}
+      </div></div>`;
+  } else {
+    body = `<button class="btn btn-primary" style="--accent:${tool.accent}" id="genQuiz">Generate quiz</button>`;
+  }
+  return renderToolHeader(tool, SUBTITLES.quiz) + body;
+}
+
+// ── Mind Map ───────────────────────────────────────────
+function viewMindmap(tool) {
+  let body;
+  if      (state.mmapLoading) body = renderLoading(tool.accent, 'branching out the ideas…');
+  else if (state.mmapError)   body = `<p class="errmsg">${state.mmapError}</p><button class="btn btn-primary" style="--accent:${tool.accent}" id="genMmap">Try again</button>`;
+  else if (state.mindmap)     body = `<div class="card" style="--accent:${tool.accent}"><span class="tab">connect it</span>${renderMmapNode(state.mindmap)}</div><div class="action-row"><button class="btn btn-ghost" id="genMmap">↻ Regenerate</button></div>`;
+  else                        body = `<button class="btn btn-primary" style="--accent:${tool.accent}" id="genMmap">Generate mind map</button>`;
+  return renderToolHeader(tool, SUBTITLES.mindmap) + body;
+}
+
+// ── Ask My Notes ────────────────────────────────────────
+function viewAsk(tool) {
+  return renderToolHeader(tool, SUBTITLES.ask) + `
+    <div class="chat-wrap" style="--accent:${tool.accent}">
+      <div class="chat-log" id="chatLog">${renderChatLog(state.askHistory, 'checking your notes…', tool.accent, state.askLoading, {title:'ask away', body:'Try "what are the key definitions?" or "summarize section 2".'})}</div>
+      <form class="chat-input-row" id="askForm">
+        <input type="text" id="askInput" placeholder="Ask something about your material…" autocomplete="off" ${state.askLoading?'disabled':''}>
+        <button class="btn btn-primary" style="--accent:${tool.accent}" type="submit" ${state.askLoading?'disabled':''}>Ask</button>
+      </form>
+    </div>`;
+}
+
+// ── Study Planner ──────────────────────────────────────
+function viewPlanner(tool) {
+  const f = state.planForm;
+  let result = '';
+  if      (state.planLoading) result = renderLoading(tool.accent, 'laying out your schedule…');
+  else if (state.planError)   result = `<p class="errmsg">${state.planError}</p>`;
+  else if (state.plan)        result = `
+    <div class="card" style="--accent:${tool.accent}"><span class="tab">plan it</span>
+      ${state.plan.map(d => `
+        <div class="plan-day ${d.type==='revision'?'revision':''}">
+          <div class="d">Day ${d.day}<span class="date">${d.date||''}</span></div>
+          <div class="body">
+            <div class="focus">${escapeHTML(d.focus||'')}${d.type==='revision'?' · revision':''}</div>
+            <ul>${(d.tasks||[]).map(t=>`<li>${escapeHTML(t)}</li>`).join('')}</ul>
+          </div>
+        </div>`).join('')}
+    </div>
+    <div class="action-row"><button class="btn btn-ghost" id="genPlan">↻ Regenerate</button></div>`;
+
+  return renderToolHeader(tool, SUBTITLES.planner) + `
+    <form id="plannerForm" class="planner-form">
+      <div class="field"><label for="examDate">Exam date</label><input type="date" id="examDate" value="${f.examDate}"></div>
+      <div class="field"><label for="hoursDay">Hours available / day</label><input type="number" id="hoursDay" min="0.5" step="0.5" value="${f.hours}"></div>
+      <div class="field full"><label for="topicsField">Topics to cover (comma-separated)</label><input type="text" id="topicsField" placeholder="e.g. cell biology, genetics, evolution" value="${escapeHTML(f.topics)}"></div>
+      <div class="field full"><button class="btn btn-primary" style="--accent:${tool.accent}" type="submit">Build my plan</button></div>
+    </form>
+    ${result}`;
+}
+
+// ── Doubt Solver ───────────────────────────────────────
+function viewDoubt(tool) {
+  return renderToolHeader(tool, SUBTITLES.doubt) + `
+    <div class="chat-wrap" style="--accent:${tool.accent}">
+      <div class="chat-log" id="doubtLog">${renderChatLog(state.doubtHistory, 'working through it…', tool.accent, state.doubtLoading, {title:"stuck on something?", body:"Ask any question — no study material needed. Works standalone, any subject."})}</div>
+      <form class="chat-input-row" id="doubtForm">
+        <input type="text" id="doubtInput" placeholder="What's confusing you?" autocomplete="off" ${state.doubtLoading?'disabled':''}>
+        <button class="btn btn-primary" style="--accent:${tool.accent}" type="submit" ${state.doubtLoading?'disabled':''}>Ask</button>
+      </form>
+    </div>`;
+}
+
+// Router — maps tool id → view function
+const VIEW_MAP = {
+  source: viewSource, notes: viewNotes, flashcards: viewFlashcards,
+  quiz: viewQuiz, mindmap: viewMindmap, ask: viewAsk,
+  planner: viewPlanner, doubt: viewDoubt,
+};
+</script>
+
+<!-- ═══════════════════════════════════════════════════════
+     MODULE H · EVENT HANDLERS
+     All addEventListener calls. Separated from view HTML.
+═══════════════════════════════════════════════════════ -->
+<script id="mod-handlers">
+function attachHandlers(toolId) {
+  const tool = toolMeta(toolId);
+
+  if (toolId === 'source') {
+    const dz    = document.getElementById('dropzone');
+    const input = document.getElementById('fileInput');
+
+    const setDragging = (active) => {
+      if (dz) dz.classList.toggle('dragging', active);
+    };
+
+    const handleDrop = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setDragging(false);
+      const file = e.dataTransfer?.files?.[0];
+      if (file) handleFile(file);
+    };
+
+    if (!window.__studyBuddyDropBound) {
+      window.__studyBuddyDropBound = true;
+      ['dragenter', 'dragover'].forEach(type => {
+        window.addEventListener(type, e => {
+          if (e.dataTransfer?.types?.includes('Files')) {
+            e.preventDefault();
+            e.stopPropagation();
+            setDragging(true);
+          }
+        });
+      });
+      ['dragleave', 'drop'].forEach(type => {
+        window.addEventListener(type, e => {
+          e.preventDefault();
+          e.stopPropagation();
+          setDragging(false);
+        });
+      });
+      window.addEventListener('drop', handleDrop);
+    }
+
+    dz?.addEventListener('click', () => input.click());
+    document.getElementById('browseFile')?.addEventListener('click', () => input.click());
+    dz?.addEventListener('dragenter', e => { e.preventDefault(); e.stopPropagation(); setDragging(true); });
+    dz?.addEventListener('dragover', e => { e.preventDefault(); e.stopPropagation(); setDragging(true); });
+    dz?.addEventListener('dragleave', e => { e.preventDefault(); e.stopPropagation(); if (!dz.contains(e.relatedTarget)) setDragging(false); });
+    dz?.addEventListener('drop', handleDrop);
+
+    input.addEventListener('change', e => { if (e.target.files[0]) handleFile(e.target.files[0]); });
+
+    document.getElementById('usePaste').addEventListener('click', () => {
+      const val = document.getElementById('pasteArea').value.trim();
+      if (!val) return;
+      state.sourceText = val; state.sourceName = '';
+      resetGeneratedContent(); renderApp();
+    });
+    const clearBtn = document.getElementById('clearSource');
+    if (clearBtn) clearBtn.addEventListener('click', () => {
+      state.sourceText = ''; state.sourceName = '';
+      resetGeneratedContent(); renderApp();
+    });
+    return;
+  }
+
+  // "Go to Source" empty-state button (on any requiresSource tool)
+  const goBtn = document.getElementById('goToSource');
+  if (goBtn) { goBtn.addEventListener('click', () => { state.currentTool = 'source'; renderApp(); }); return; }
+
+  if (toolId === 'notes') {
+    document.getElementById('genNotes')?.addEventListener('click', generateNotes);
+  }
+
+  if (toolId === 'flashcards') {
+    document.getElementById('genFlash')?.addEventListener('click', generateFlashcards);
+    document.getElementById('flashCard')?.addEventListener('click', () => { state.flashFlipped = !state.flashFlipped; renderApp(); });
+    document.getElementById('flashPrev')?.addEventListener('click', () => { state.flashIndex = Math.max(0, state.flashIndex-1); state.flashFlipped = false; renderApp(); });
+    document.getElementById('flashNext')?.addEventListener('click', () => { state.flashIndex = Math.min(state.flashcards.length-1, state.flashIndex+1); state.flashFlipped = false; renderApp(); });
+  }
+
+  if (toolId === 'quiz') {
+    document.getElementById('genQuiz')?.addEventListener('click', generateQuiz);
+    document.getElementById('retakeQuiz')?.addEventListener('click', () => { state.quizIndex = 0; state.quizScore = 0; state.quizSelected = null; state.quizFinished = false; renderApp(); });
+    document.querySelectorAll('.quiz-opt').forEach(btn => {
+      btn.addEventListener('click', () => {
+        state.quizSelected = parseInt(btn.dataset.idx, 10);
+        if (state.quizSelected === state.quiz[state.quizIndex].correctIndex) state.quizScore++;
+        renderApp();
+      });
+    });
+    document.getElementById('quizNext')?.addEventListener('click', () => {
+      if (state.quizIndex === state.quiz.length - 1) state.quizFinished = true;
+      else { state.quizIndex++; state.quizSelected = null; }
+      renderApp();
+    });
+  }
+
+  if (toolId === 'mindmap') {
+    document.getElementById('genMmap')?.addEventListener('click', generateMindmap);
+  }
+
+  if (toolId === 'ask') {
+    document.getElementById('askForm').addEventListener('submit', e => {
+      e.preventDefault();
+      const inp = document.getElementById('askInput');
+      const val = inp.value; inp.value = '';
+      sendAsk(val);
+    });
+    document.getElementById('chatLog').scrollTop = 999999;
+  }
+
+  if (toolId === 'planner') {
+    document.getElementById('plannerForm').addEventListener('submit', e => {
+      e.preventDefault();
+      state.planForm.examDate = document.getElementById('examDate').value;
+      state.planForm.hours    = document.getElementById('hoursDay').value;
+      state.planForm.topics   = document.getElementById('topicsField').value;
+      generatePlan();
+    });
+    document.getElementById('genPlan')?.addEventListener('click', generatePlan);
+  }
+
+  if (toolId === 'doubt') {
+    document.getElementById('doubtForm').addEventListener('submit', e => {
+      e.preventDefault();
+      const inp = document.getElementById('doubtInput');
+      const val = inp.value; inp.value = '';
+      sendDoubt(val);
+    });
+    document.getElementById('doubtLog').scrollTop = 999999;
+  }
+}
+</script>
+
+<!-- ═══════════════════════════════════════════════════════
+     MODULE I · RENDERER (App shell + routing)
+     renderApp() is the single entry point called after
+     every state change.
+═══════════════════════════════════════════════════════ -->
+<script id="mod-renderer">
+function renderNav() {
+  document.getElementById('nav').innerHTML = TOOLS.map(t => `
+    <button class="nav-item ${state.currentTool===t.id?'active':''}"
+            style="--tab-accent:${t.accent}; --tab-accent-dark:${t.accentDark}"
+            data-tool="${t.id}">
+      <span class="ico">${t.icon}</span>
+      <span class="lbl"><span class="t">${t.label}</span><span class="tag">${t.tag}</span></span>
+    </button>`).join('');
+  document.querySelectorAll('.nav-item').forEach(btn =>
+    btn.addEventListener('click', () => { state.currentTool = btn.dataset.tool; renderApp(); })
+  );
+}
+
+function renderMain() {
+  const el   = document.getElementById('main-content');
+  const tool = toolMeta(state.currentTool);
+  const hasSource = state.sourceText.trim().length > 0;
+
+  if (tool.requiresSource && !hasSource) {
+    el.innerHTML = renderToolHeader(tool, SUBTITLES[tool.id] || '') + renderEmptyState(tool);
+  } else {
+    el.innerHTML = VIEW_MAP[tool.id](tool);
+  }
+  attachHandlers(tool.id);
+}
+
+function refreshBackendStatus() {
+  if (state.backendStatus !== 'checking') return;
+  API.health().then(data => {
+    state.backendStatus = 'ok';
+    state.backendMessage = data.model ? `Connected to ${data.model}` : 'Local AI backend is connected.';
+    renderApp();
+  }).catch(() => {
+    state.backendStatus = 'offline';
+    state.backendMessage = 'Backend unavailable on localhost:3001.';
+    renderApp();
+  });
+}
+
+function renderApp() {
+  refreshBackendStatus();
+  renderNav();
+  renderMain();
+}
+
+// Kick off
+renderApp();
+</script>
+
+</body>
+</html>
